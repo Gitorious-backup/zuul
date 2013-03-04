@@ -83,9 +83,16 @@ EOF
     end
 
     def link(rel, object)
+      lookup = rel
+
+      if rel.is_a?(Hash)
+        lookup = rel[rel.keys.first]
+        rel = rel.keys.first
+      end
+
       return curies if rel == "curies"
       return { "self" => { "href" => uri(object.url) } } if rel == "self"
-      endpoint = self.class.endpoint(rel)
+      endpoint = self.class.endpoint(lookup)
       return {} if !endpoint
       link = endpoint.link_for(object)
       link = { "href" => link } if !link.is_a?(Hash)

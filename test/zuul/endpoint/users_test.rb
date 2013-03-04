@@ -15,44 +15,37 @@
 #   You should have received a copy of the GNU Affero General Public License
 #   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #++
+require "test_helper"
+require "zuul/endpoint/users"
 require "ostruct"
 
-class User < Struct.new(:id, :login, :fullname, :email)
-  def public_email?
-    true
-  end
-end
-
-class UserFinder
-  def by_login(login)
-    login == "christian" ? User.new(1, login, "Christian", "christian@gitorious.com") : nil
-  end
-
+class TestUserFinder
   def by_id(id)
-    User.new(1)
+    OpenStruct.new(:id => id)
   end
 end
 
-class SuccessfulOutcome
-  attr_reader :result
-  def initialize(result)
-    @result = result
-  end
-  def success?; true; end
-end
+describe Zuul::Endpoint::Users do
+  before { @app = Zuul::Test::Application.new }
 
-class FailedOutcome
-  attr_reader :errors
-  def initialize(errors)
-    @errors = errors
-  end
-  def success?; false; end
-end
+  it "generates link" do
+    endpoint = Zuul::Endpoint::Users.new(TestUserFinder.new)
 
-class SshKeyCreator
-  def self.run(params)
-    user = OpenStruct.new(:id => 1)
-    key = OpenStruct.new(:id => 12, :user => user, :key => params[:key])
-    SuccessfulOutcome.new(key)
+    assert_equal("/users/42", endpoint.link_for(OpenStruct.new(:id => 42)))
+  end
+
+  it "responds to OPTIONS request" do
+    endpoint = Zuul::Endpoint::Users.new(TestUserFinder.new)
+    response = endpoint.options(@app, nil, {})
+
+    assert Hash === response
+    assert_equal "GET, OPTIONS", @app.headers["Allow"]
+  end
+
+  it "responds to GET request" do
+    endpoint = Zuul::Endpoint::Users.new(TestUserFinder.new)
+    response = endpoint.get(@app, nil, :id => 13)
+
+    assert_equal 13, response.to_hash[:id]
   end
 end

@@ -43,11 +43,6 @@ describe Zuul::Serializer::User do
     assert_equal 1, serializer.id
   end
 
-  it "generates url" do
-    serializer = Zuul::Serializer::User.new(@user)
-    assert_equal "/users/1", serializer.url
-  end
-
   it "serializes user as hash" do
     def @user.public_email?; false; end
     serializer = Zuul::Serializer::User.new(@user)

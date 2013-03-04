@@ -17,6 +17,14 @@ Zuul::App.mount("gts:find_user", Zuul::Endpoint::UserLookup.new(finder)) do |rou
   route.get("/user/:login", :get)
 end
 
+# Users
+require "zuul/endpoint/users"
+
+Zuul::App.mount("gts:user", Zuul::Endpoint::Users.new(finder)) do |route|
+  route.options("/users/:id", :options)
+  route.get("/users/:id", :get)
+end
+
 # SSH Keys
 require "zuul/endpoint/ssh_keys"
 

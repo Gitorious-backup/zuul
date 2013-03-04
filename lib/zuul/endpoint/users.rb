@@ -15,44 +15,27 @@
 #   You should have received a copy of the GNU Affero General Public License
 #   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #++
-require "ostruct"
+require "zuul/serializer/user"
 
-class User < Struct.new(:id, :login, :fullname, :email)
-  def public_email?
-    true
-  end
-end
+module Zuul
+  module Endpoint
+    class Users
+      def initialize(user_finder)
+        @user_finder = user_finder
+      end
 
-class UserFinder
-  def by_login(login)
-    login == "christian" ? User.new(1, login, "Christian", "christian@gitorious.com") : nil
-  end
+      def link_for(user)
+        "/users/#{user.id}"
+      end
 
-  def by_id(id)
-    User.new(1)
-  end
-end
+      def options(app, request, params)
+        app.headers({ "Allow" => "GET, OPTIONS" })
+        { "message" => "GET /users/{id} to view user" }
+      end
 
-class SuccessfulOutcome
-  attr_reader :result
-  def initialize(result)
-    @result = result
-  end
-  def success?; true; end
-end
-
-class FailedOutcome
-  attr_reader :errors
-  def initialize(errors)
-    @errors = errors
-  end
-  def success?; false; end
-end
-
-class SshKeyCreator
-  def self.run(params)
-    user = OpenStruct.new(:id => 1)
-    key = OpenStruct.new(:id => 12, :user => user, :key => params[:key])
-    SuccessfulOutcome.new(key)
+      def get(app, request, params)
+        Zuul::Serializer::User.new(@user_finder.by_id(params[:id]))
+      end
+    end
   end
 end

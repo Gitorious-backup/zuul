@@ -25,7 +25,9 @@ module Zuul
       def url; "/users/#{ssh_key.user.id}/ssh_keys"; end
 
       def links
-        { "self" => self, "curies" => nil, "parent" => ssh_key.user }
+        { "self" => self,
+          "curies" => nil,
+          { "parent" => "gts:user" } => ssh_key.user }
       end
 
       def to_hash

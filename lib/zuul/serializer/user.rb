@@ -25,12 +25,15 @@ module Zuul
       def initialize(user)
         @user = user
         @profile = :user
-        @links = { "self" => user, "curies" => nil, "gts:ssh_keys" => user }
+        @links = {
+          { "self" => "gts:user" } => user,
+          "curies" => nil,
+          "gts:ssh_keys" => user
+        }
       end
 
       def success?; !user.nil?; end
       def id; user.id; end
-      def url; "/users/#{user.id}"; end
 
       def errors
         return nil if success?
