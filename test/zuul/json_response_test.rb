@@ -25,7 +25,7 @@ describe Zuul::JSONResponse do
     assert_equal 200, response.status
   end
 
-  it "defaults toa content-type: application/json" do
+  it "defaults to content-type: application/json" do
     response = Zuul::JSONResponse.new(nil, nil)
     assert_equal "application/json", response.content_type
   end
@@ -35,9 +35,13 @@ describe Zuul::JSONResponse do
     assert_equal({ "name" => "Freddy" }, JSON.parse(response.body))
   end
 
-  it "includes Content-Length header" do
+  it "includes Content-Length and Etag headers" do
     response = Zuul::JSONResponse.new(nil, { :name => "Freddy" })
-    headers = { "Content-Length" => "17", "Content-Type" => "application/json" }
+    headers = {
+      "Content-Length" => "17",
+      "Content-Type" => "application/json",
+      "Etag" => "1a0437b6879e4f45cea79b3788e4ec3c"
+    }
     assert_equal(headers, response.headers)
   end
 

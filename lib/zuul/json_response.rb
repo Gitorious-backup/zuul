@@ -16,6 +16,7 @@
 #   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #++
 require "json"
+require "digest/md5"
 
 module Zuul
   class JSONResponse
@@ -34,7 +35,8 @@ module Zuul
 
     def headers
       { "Content-Length" => body.length.to_s,
-        "Content-Type" => content_type }
+        "Content-Type" => content_type,
+        "Etag" => Digest::MD5.hexdigest(body) }
     end
 
     def hash
