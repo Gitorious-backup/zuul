@@ -1,7 +1,12 @@
 # API Index
 require "zuul/endpoint/api_index"
 
-index = Zuul::Endpoint::APIIndex.new(["self", "curies", "gts:find_user"])
+index = Zuul::Endpoint::APIIndex.new({
+  { "self" => "start" } => nil,
+  "curies" => nil,
+  "gts:find_user" => nil
+})
+
 Zuul::App.mount("start", index) do |route|
   route.options("/", :options)
   route.get("/", :get)

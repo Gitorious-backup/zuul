@@ -30,6 +30,10 @@ module Zuul
       def get(app, request, params)
         @links
       end
+
+      def link_for(object)
+        "/"
+      end
     end
 
     class LinkCollection

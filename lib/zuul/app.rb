@@ -91,7 +91,6 @@ EOF
       end
 
       return curies if rel == "curies"
-      return { "self" => { "href" => uri(object.url) } } if rel == "self"
       endpoint = self.class.endpoint(lookup)
       return {} if !endpoint
       link = endpoint.link_for(object)
