@@ -39,7 +39,7 @@ module Zuul
     end
 
     before do
-      return if request.path_info =~ /^\/(rels\/.+|schema)/
+      return if request.path_info =~ /^\/(rels\/.+|schema|browser)/
 
       if header("gts-api-version") != VERSION
         bad_request(<<EOF)
@@ -50,6 +50,10 @@ EOF
     end
 
     ### Actions
+
+    get /\/browser\/?/ do
+      redirect "/browser/index.html"
+    end
 
     get "/schema/:schema" do
       file = File.join("schema", params[:schema].gsub(/\./, "-"))
