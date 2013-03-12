@@ -172,10 +172,16 @@
         href: uri
       }).render();
 
+      var prefilled = uri.match(/\{([^\}]*)\}/g).reduce(function (props, prop) {
+          return props.concat("\"" + prop.slice(1, prop.length - 1) + "\": \"...\"");
+      }, []);
+      d.$el.find("textarea").val("{ " + prefilled.join(",\n  ") + " }");
+
       d.$el.dialog({
         title: 'Query URI Template',
         width: 400
       });
+
       window.foo = d;
     },
 
