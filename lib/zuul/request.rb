@@ -15,11 +15,41 @@
 #   You should have received a copy of the GNU Affero General Public License
 #   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #++
+require "json"
+
 module Zuul
+  class InvalidRequest < Exception
+  end
+
   class Request
+    def self.for(request, params)
+      ct = ((request.content_type || "").split(";")[0] || "").strip
+      if ct == "application/json"
+        return JSONRequest.new(request, params)
+      end
+      FormEncodedRequest.new(request, params)
+    end
+  end
+
+  class FormEncodedRequest
     def initialize(request, params)
       @request = request
       @params = params
+    end
+
+    def params
+      @request.params.merge(@params)
+    end
+  end
+
+  class JSONRequest
+    def initialize(request, params)
+      @request = request
+      @params = params
+      body = request.body.read
+      @params = JSON.parse(body).merge(params) unless body == ""
+    rescue JSON::ParserError => err
+      raise InvalidRequest.new("Invalid request: Failed to parse request body JSON: #{err.message}")
     end
 
     def params

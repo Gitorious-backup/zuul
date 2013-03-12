@@ -18,6 +18,7 @@
 require "bundler/setup"
 require "minitest/autorun"
 require "zuul/error_message_hash"
+require "stringio"
 
 Bundler.require(:default, :test)
 
@@ -40,8 +41,10 @@ module Zuul
     end
 
     class Request
-      attr_reader :params
-      def initialize(params = {})
+      attr_reader :params, :body
+      attr_accessor :content_type
+      def initialize(params = {}, body = "")
+        @body = StringIO.new(body)
         @params = params.inject({}) do |h,kv|
           h[kv[0].to_s] = kv[1]
           h[kv[0].to_s.to_sym] = kv[1]
