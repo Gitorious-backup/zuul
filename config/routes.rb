@@ -4,7 +4,8 @@ require "zuul/endpoint/api_index"
 index = Zuul::Endpoint::APIIndex.new({
   { "self" => "start" } => nil,
   "curies" => nil,
-  "gts:find_user" => nil
+  "gts:find_user" => nil,
+  "gts:projects" => nil
 })
 
 Zuul::App.mount("start", index) do |route|
@@ -35,5 +36,13 @@ require "zuul/endpoint/ssh_keys"
 
 Zuul::App.mount("gts:ssh_keys", Zuul::Endpoint::SshKeys.new(SshKeyCreator)) do |route|
   route.options("/users/:user_id/ssh_keys", :options)
-  route.post("/users/:user_id/ssh_keys", :method => :post, :schema => "ssh-key-payload")
+  route.post("/users/:user_id/ssh_keys", :method => :post, :schema => "ssh_key_payload")
+end
+
+# Projects
+require "zuul/endpoint/projects"
+
+Zuul::App.mount("gts:projects", Zuul::Endpoint::Projects.new(nil)) do |route|
+  route.options("/projects", :options)
+  route.post("/projects", :method => :post, :schema => "project")
 end
