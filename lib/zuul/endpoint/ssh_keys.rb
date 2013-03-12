@@ -28,13 +28,13 @@ module Zuul
         "/users/#{user.id}/ssh_keys"
       end
 
-      def options(app, request, params)
-        app.headers({ "Allow" => "POST, OPTIONS" })
+      def options(request, response)
+        response.headers({ "Allow" => "POST, OPTIONS" })
         { "message" => "POST to upload an SSH key" }
       end
 
-      def post(app, request, params)
-        Zuul::Serializer::SshKey.new(@backend.run(params))
+      def post(request, response)
+        Zuul::Serializer::SshKey.new(@backend.run(request.params))
       end
     end
   end

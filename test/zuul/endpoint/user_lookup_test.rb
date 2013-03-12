@@ -26,7 +26,9 @@ class TestUserFinder
 end
 
 describe Zuul::Endpoint::UserLookup do
-  before { @app = Zuul::Test::Application.new }
+  before do
+    @res = Zuul::Test::Response.new
+  end
 
   it "generates link" do
     endpoint = Zuul::Endpoint::UserLookup.new(TestUserFinder.new)
@@ -37,15 +39,15 @@ describe Zuul::Endpoint::UserLookup do
 
   it "responds to OPTIONS request" do
     endpoint = Zuul::Endpoint::UserLookup.new(TestUserFinder.new)
-    response = endpoint.options(@app, nil, {})
+    response = endpoint.options(Zuul::Test::Request.new, @res)
 
     assert Hash === response
-    assert_equal "GET, OPTIONS", @app.headers["Allow"]
+    assert_equal "GET, OPTIONS", @res.headers["Allow"]
   end
 
   it "responds to GET request" do
     endpoint = Zuul::Endpoint::UserLookup.new(TestUserFinder.new)
-    response = endpoint.get(@app, nil, :login => "mm")
+    response = endpoint.get(Zuul::Test::Request.new(:login => "mm"), @res)
 
     assert_equal "mm", response.to_hash[:login]
   end

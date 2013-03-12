@@ -28,13 +28,13 @@ module Zuul
         "/users/#{user.id}"
       end
 
-      def options(app, request, params)
-        app.headers({ "Allow" => "GET, OPTIONS" })
+      def options(request, response)
+        response.headers({ "Allow" => "GET, OPTIONS" })
         { "message" => "GET /users/{id} to view user" }
       end
 
-      def get(app, request, params)
-        Zuul::Serializer::User.new(@user_finder.by_id(params[:id]))
+      def get(request, response)
+        Zuul::Serializer::User.new(@user_finder.by_id(request.params[:id]))
       end
     end
   end

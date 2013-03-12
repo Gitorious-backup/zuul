@@ -16,31 +16,14 @@
 #   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #++
 module Zuul
-  module Endpoint
-    class APIIndex
-      def initialize(links)
-        @links = LinkCollection.new(links)
-      end
-
-      def options(request, response)
-        response.headers({ "Allow" => "GET, OPTIONS" })
-        { "message" => "Welcome to the Gitorious API" }
-      end
-
-      def get(request, response)
-        @links
-      end
-
-      def link_for(object)
-        "/"
-      end
+  class Request
+    def initialize(request, params)
+      @request = request
+      @params = params
     end
 
-    class LinkCollection
-      attr_reader :links
-      def initialize(links); @links = links; end
-      def to_hash; {}; end
-      def url; "/"; end
+    def params
+      @request.params.merge(@params)
     end
   end
 end

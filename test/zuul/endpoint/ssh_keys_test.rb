@@ -26,7 +26,10 @@ class TestSshKeyCreator
 end
 
 describe Zuul::Endpoint::SshKeys do
-  before { @app = Zuul::Test::Application.new }
+  before do
+    @req = Zuul::Test::Request.new
+    @res = Zuul::Test::Response.new
+  end
 
   it "generates link" do
     endpoint = Zuul::Endpoint::SshKeys.new(TestSshKeyCreator)
@@ -37,15 +40,15 @@ describe Zuul::Endpoint::SshKeys do
 
   it "responds to OPTIONS request" do
     endpoint = Zuul::Endpoint::SshKeys.new(TestSshKeyCreator)
-    response = endpoint.options(@app, nil, {})
+    response = endpoint.options(@req, @res)
 
     assert Hash === response
-    assert_equal "POST, OPTIONS", @app.headers["Allow"]
+    assert_equal "POST, OPTIONS", @res.headers["Allow"]
   end
 
   it "responds to POST request" do
     endpoint = Zuul::Endpoint::SshKeys.new(TestSshKeyCreator)
-    response = endpoint.post(@app, nil, :key => "mm")
+    response = endpoint.post(Zuul::Test::Request.new(:key => "mm"), @res)
 
     assert_equal "mm", response.to_hash[:key]
   end

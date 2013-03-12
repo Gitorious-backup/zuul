@@ -28,13 +28,13 @@ module Zuul
         { "href" => "/user/{login}", "templated" => true }
       end
 
-      def options(app, request, params)
-        app.headers({ "Allow" => "GET, OPTIONS" })
+      def options(request, response)
+        response.headers({ "Allow" => "GET, OPTIONS" })
         { "message" => "To find a user, GET /user/{login}" }
       end
 
-      def get(app, request, params)
-        user = @user_finder.by_login(params[:login])
+      def get(request, response)
+        user = @user_finder.by_login(request.params["login"])
         Zuul::Serializer::User.new(user)
       end
     end

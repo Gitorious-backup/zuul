@@ -39,7 +39,18 @@ module Zuul
       def success?; false; end
     end
 
-    class Application
+    class Request
+      attr_reader :params
+      def initialize(params = {})
+        @params = params.inject({}) do |h,kv|
+          h[kv[0].to_s] = kv[1]
+          h[kv[0].to_s.to_sym] = kv[1]
+          h
+        end
+      end
+    end
+
+    class Response
       def headers(headers = nil)
         return @headers || {} if headers.nil?
         @headers = (@headers || {}).merge(headers)

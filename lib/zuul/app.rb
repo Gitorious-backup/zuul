@@ -19,6 +19,7 @@ require "json"
 require "sinatra/base"
 require "zuul/hash_router"
 require "zuul/json_response"
+require "zuul/request"
 
 module Zuul
   class App < Sinatra::Base
@@ -106,7 +107,7 @@ EOF
     private
     def self.mount_endpoint(verb, route, endpoint, handler)
       self.send(verb.to_s.downcase.to_sym, route) do |*args|
-        result = endpoint.send(handler[:method], self, request, params)
+        result = endpoint.send(handler[:method], Zuul::Request.new(request, self.params), self)
         response = Zuul::JSONResponse.for(self, result)
         status(response.status)
         headers(response.headers)

@@ -53,18 +53,18 @@ describe Zuul::JSONResponse do
   end
 
   describe Zuul::HALResponse do
-    before { @app = Zuul::Test::Application.new }
+    before { @res = Zuul::Test::Response.new }
 
     it "defaults to hal+json content type" do
       result = OpenStruct.new({})
-      response = Zuul::JSONResponse.for(@app, result)
+      response = Zuul::JSONResponse.for(@res, result)
 
       assert_equal "application/hal+json", response.content_type
     end
 
     it "includes profile with content type" do
       result = OpenStruct.new(:profile => "user")
-      response = Zuul::JSONResponse.for(@app, result)
+      response = Zuul::JSONResponse.for(@res, result)
 
       ct = "application/hal+json; profile=http://localhost/schema/user"
       assert_equal ct, response.content_type
@@ -73,7 +73,7 @@ describe Zuul::JSONResponse do
     it "includes links in body" do
       result = OpenStruct.new(:to_hash => { :name => "Chris" },
                               :links => { "self" => nil, "find_user" => nil })
-      response = Zuul::JSONResponse.for(@app, result)
+      response = Zuul::JSONResponse.for(@res, result)
 
       url = "http://localhost"
       links = { "self" => url, "find_user" => url }
