@@ -49,6 +49,12 @@ You can also start Zuul from `GITORIOUS_HOME`:
     $ env GITORIOUS_HOME=. \
         bundle exec rackup /path/to/zuul/config.ru -I/path/to/zuul/lib
 
+There's a script that automates these that can be run like this:
+
+    $ /path/to/zuul/run $DIR
+
+Where $DIR is the path to either Zuul or Gitorious.
+
 # Architecture
 
 Zuul is a Sinatra application. However, to avoid bloat, each API endpoint/action
