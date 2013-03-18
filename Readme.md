@@ -56,13 +56,14 @@ is implemented as a separate endpoint class. These are found in
 `lib/zuul/endpoint/*.rb`. The endpoints are associated with URLs and HTTP verbs
 through the `config/routes.rb` file. This file typically wires together endpoint
 objects with URL patterns/HTTP verbs and dependencies from Gitorious. This file
-is the only file that should refer to global Gitorious classes.
+is the only file that should refer to global Gitorious classes (this way, all
+endpoints etc can be tested without loading the Gitorious application).
 
 Endpoints typically return an object wrapped in a serializer. Serializers live
-in `lib/zuul/serializer/*.rb` and specify how model objects are expressed as
+in `lib/zuul/serializer/*.rb` and specify how model objects are converted to
 hashes, whether the endpoint result was successful etc. Every endpoint returns
-something that can be serialized as a hash, and the application then JSON
-encodes the hash.
+something that can be serialized as a hash, which is then converted to JSON by
+the application.
 
 Many endpoints use "mutations" from Gitorious. Most serializers can wrap an
 `Outcome` instance, and communicate failure/success etc.
