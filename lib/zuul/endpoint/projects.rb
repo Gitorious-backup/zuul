@@ -33,8 +33,10 @@ module Zuul
         { "message" => "POST to create new project" }
       end
 
+      # TODO: Get logged in user
       def post(request, response)
-        Zuul::Serializer::Project.new(@backend.run(request.params))
+        outcome = @backend.run(request.params, { :user_id => 1 })
+        Zuul::Serializer::Project.new(outcome)
       end
     end
   end

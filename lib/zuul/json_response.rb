@@ -93,7 +93,9 @@ module Zuul
 
     def type
       error = response.errors
-      error.respond_to?(:type) ? error.type : error.class.to_s
+      return error.type if error.respond_to?(:type)
+      return "validation_error" if error.class.to_s == "Mutations::ErrorHash"
+      error.class.to_s
     end
 
     def body

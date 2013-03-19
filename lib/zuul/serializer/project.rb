@@ -21,9 +21,42 @@ module Zuul
   module Serializer
     class Project < Zuul::MutationSerializer
       serializes :project
+      def id; project.id; end
+      def url; "/projects/#{id}"; end
+
+      def links
+        { "self" => self,
+          "curies" => nil,
+          { "parent" => "gts:user" } => project.owner }
+      end
 
       def to_hash
-        {}
+        hash = { :id => project.id,
+          :title => project.title,
+          :slug => project.slug,
+          :description => project.description,
+          :created_at => project.created_at,
+          :owner => {
+            :id => project.owner.id,
+            :type => project.owner.class.to_s
+          }
+        }
+
+        if project.wiki_repository
+          hash["wiki_url"] = project.wiki_repository.default_clone_url
+        end
+
+        hash.merge(pick(project, [:license, :home_url, :mailinglist_url, :bugtracker_url]))
+      end
+
+      private
+      def pick(object, attrs)
+        Hash.new.tap do |h|
+          attrs.each do |a|
+            value = object.send(a)
+            h[a] = value unless value.nil? || value == ""
+          end
+        end
       end
     end
   end

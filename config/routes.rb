@@ -42,7 +42,7 @@ end
 # Projects
 require "zuul/endpoint/projects"
 
-Zuul::App.mount("gts:projects", Zuul::Endpoint::Projects.new(nil)) do |route|
+Zuul::App.mount("gts:projects", Zuul::Endpoint::Projects.new(ProjectCreator)) do |route|
   route.options("/projects", :options)
   route.post("/projects", :method => :post, :schema => "project")
 end

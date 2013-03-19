@@ -8,12 +8,12 @@
             "description": "The unique identifier for a product",
             "type": "integer"
         },
-        "name": {
+        "title": {
             "description": "The project name",
             "type": "string"
         },
         "slug": {
-            "description": "The name as it will appear in URLs etc. If not provided, this will be generated from the name",
+            "description": "The name as it appears in URLs etc.",
             "type": "string"
         },
         "description": {
@@ -24,7 +24,7 @@
             "description": "The license name, e.g. 'MIT License'",
             "type": "string"
         },
-        "webpage_url": {
+        "home_url": {
             "description": "URL to the project's webpage",
             "type": "string"
         },
@@ -46,5 +46,5 @@
             "type": "integer"
         }
     },
-    "required": ["id", "name", "description", "owner", "created_at"]
+    "required": ["id", "title", "description", "owner", "created_at"]
 }
