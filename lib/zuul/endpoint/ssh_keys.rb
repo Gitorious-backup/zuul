@@ -16,12 +16,13 @@
 #   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #++
 require "zuul/serializer/ssh_key"
+require "zuul/outcome"
 
 module Zuul
   module Endpoint
     class SshKeys
-      def initialize(backend)
-        @backend = backend
+      def initialize(use_case)
+        @use_case = use_case
       end
 
       def link_for(user)
@@ -34,7 +35,8 @@ module Zuul
       end
 
       def post(request, response)
-        Zuul::Serializer::SshKey.new(@backend.run(request.params))
+        outcome = @use_case.new(Zuul::App, request.user).execute(request.params)
+        Zuul::Outcome.new(outcome, Zuul::Serializer::SshKey)
       end
     end
   end

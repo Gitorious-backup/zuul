@@ -15,30 +15,30 @@
 #   You should have received a copy of the GNU Affero General Public License
 #   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #++
-require "zuul/serializer/user"
-require "use_case"
 
 module Zuul
-  module Endpoint
-    class UserLookup
-      def initialize(user_finder)
-        @user_finder = user_finder
-      end
+  class Outcome
+    def initialize(outcome, serializer)
+      @outcome = outcome
+      @serializer = serializer
+    end
 
-      def link_for(object)
-        { "href" => "/user/{login}", "templated" => true }
+    def success(&block)
+      wrapped = nil
+      @outcome.success do |result|
+        wrapped = @serializer.new(result)
+        block.call(wrapped) if !block.nil?
       end
+      wrapped
+    end
 
-      def options(request, response)
-        response.headers({ "Allow" => "GET, OPTIONS" })
-        { "message" => "To find a user, GET /user/{login}" }
-      end
+    def respond_to?(name)
+      super || @outcome.respond_to?(name)
+    end
 
-      def get(request, response)
-        user = @user_finder.by_login(request.params["login"])
-        return UseCase::FailedOutcome.new({ :user => "User not found" }) if user.nil?
-        UseCase::SuccessfulOutcome.new(Zuul::Serializer::User.new(user))
-      end
+    def method_missing(name, *args, &block)
+      return super if !@outcome.respond_to?(name)
+      @outcome.send(name, *args, &block)
     end
   end
 end

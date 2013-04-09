@@ -21,7 +21,35 @@ module Zuul
   class InvalidRequest < Exception
   end
 
+  class AuthenticationRequired < Exception
+  end
+
   class Request
+    attr_reader :request, :params
+
+    def initialize(request, params)
+      @request = request
+      @params = params
+    end
+
+    def params
+      @request.params.merge(@params)
+    end
+
+    def credentials
+      @auth ||= Rack::Auth::Basic::Request.new(request.env)
+      return nil if !@auth.provided? || !@auth.basic? || @auth.credentials.nil?
+      @auth.credentials
+    end
+
+    def user
+      return @user if @user
+      login, password = credentials
+      @user = Request.authenticate(login, password) if !login.nil? && !password.nil?
+      raise AuthenticationRequired.new("Authentication is required") if @user.nil?
+      @user
+    end
+
     def self.for(request, params)
       ct = ((request.content_type || "").split(";")[0] || "").strip
       if ct == "application/json"
@@ -29,31 +57,25 @@ module Zuul
       end
       FormEncodedRequest.new(request, params)
     end
-  end
 
-  class FormEncodedRequest
-    def initialize(request, params)
-      @request = request
-      @params = params
+    def self.authenticator=(authenticator)
+      @authenticator = authenticator
     end
 
-    def params
-      @request.params.merge(@params)
+    def self.authenticate(login, password)
+      @authenticator && @authenticator.authenticate(login, password)
     end
   end
 
-  class JSONRequest
+  class FormEncodedRequest < Request
+  end
+
+  class JSONRequest < Request
     def initialize(request, params)
-      @request = request
-      @params = params
       body = request.body.read
-      @params = JSON.parse(body).merge(params) unless body == ""
+      super(request, body == "" ? {} : JSON.parse(body).merge(params))
     rescue JSON::ParserError => err
       raise InvalidRequest.new("Invalid request: Failed to parse request body JSON: #{err.message}")
-    end
-
-    def params
-      @request.params.merge(@params)
     end
   end
 end

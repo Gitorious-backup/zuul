@@ -15,19 +15,22 @@
 #   You should have received a copy of the GNU Affero General Public License
 #   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #++
-require "zuul/mutation_serializer"
-
 module Zuul
   module Serializer
-    class Project < Zuul::MutationSerializer
-      serializes :project
+    class Project
+      def initialize(project)
+        @project = project
+      end
+
       def id; project.id; end
       def url; "/projects/#{id}"; end
 
       def links
         { "self" => self,
           "curies" => nil,
-          { "parent" => "gts:user" } => project.owner }
+          { "parent" => "gts:user" } => project.owner,
+          "gts:repositories" => project,
+          { "gts:owner" => "gts:team" } => project }
       end
 
       def to_hash
@@ -58,6 +61,8 @@ module Zuul
           end
         end
       end
+
+      def project; @project; end
     end
   end
 end

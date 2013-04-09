@@ -15,30 +15,26 @@
 #   You should have received a copy of the GNU Affero General Public License
 #   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #++
-require "zuul/serializer/user"
-require "use_case"
+require "test_helper"
+require "zuul/serializer/team"
+require "ostruct"
 
-module Zuul
-  module Endpoint
-    class UserLookup
-      def initialize(user_finder)
-        @user_finder = user_finder
-      end
+describe Zuul::Serializer::Team do
+  before do
+    @created = Time.now
+    @team = OpenStruct.new({
+        :id => 1,
+        :name => "gitorians"
+      })
+  end
 
-      def link_for(object)
-        { "href" => "/user/{login}", "templated" => true }
-      end
+  it "proxies id" do
+    serializer = Zuul::Serializer::Team.new(@team)
+    assert_equal 1, serializer.id
+  end
 
-      def options(request, response)
-        response.headers({ "Allow" => "GET, OPTIONS" })
-        { "message" => "To find a user, GET /user/{login}" }
-      end
-
-      def get(request, response)
-        user = @user_finder.by_login(request.params["login"])
-        return UseCase::FailedOutcome.new({ :user => "User not found" }) if user.nil?
-        UseCase::SuccessfulOutcome.new(Zuul::Serializer::User.new(user))
-      end
-    end
+  it "serializes team as hash" do
+    serializer = Zuul::Serializer::Team.new(@team)
+    assert_equal({ :id => 1, :name => "gitorians" }, serializer.to_hash)
   end
 end

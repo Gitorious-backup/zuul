@@ -18,10 +18,14 @@
 require "test_helper"
 require "zuul/endpoint/ssh_keys"
 require "ostruct"
+require "use_case"
 
-class TestSshKeyCreator
-  def self.run(params)
-    OpenStruct.new(:result => OpenStruct.new(:id => 666, :key => params[:key]))
+class TestCreateSshKey
+  def initialize(app, user)
+  end
+
+  def execute(params)
+    UseCase::SuccessfulOutcome.new(OpenStruct.new(:id => 666, :key => params[:key]))
   end
 end
 
@@ -32,14 +36,14 @@ describe Zuul::Endpoint::SshKeys do
   end
 
   it "generates link" do
-    endpoint = Zuul::Endpoint::SshKeys.new(TestSshKeyCreator)
+    endpoint = Zuul::Endpoint::SshKeys.new(TestCreateSshKey)
 
     user = OpenStruct.new(:id => 42)
     assert_equal("/users/42/ssh_keys", endpoint.link_for(user))
   end
 
   it "responds to OPTIONS request" do
-    endpoint = Zuul::Endpoint::SshKeys.new(TestSshKeyCreator)
+    endpoint = Zuul::Endpoint::SshKeys.new(TestCreateSshKey)
     response = endpoint.options(@req, @res)
 
     assert Hash === response
@@ -47,9 +51,9 @@ describe Zuul::Endpoint::SshKeys do
   end
 
   it "responds to POST request" do
-    endpoint = Zuul::Endpoint::SshKeys.new(TestSshKeyCreator)
+    endpoint = Zuul::Endpoint::SshKeys.new(TestCreateSshKey)
     response = endpoint.post(Zuul::Test::Request.new(:key => "mm"), @res)
 
-    assert_equal "mm", response.to_hash[:key]
+    assert_equal "mm", response.success.to_hash[:key]
   end
 end

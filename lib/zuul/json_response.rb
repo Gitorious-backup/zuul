@@ -20,9 +20,9 @@ require "digest/md5"
 
 module Zuul
   class JSONResponse
-    def initialize(router, response)
+    def initialize(router, result)
       @router = router
-      @response = response
+      @result = result
     end
 
     def status
@@ -40,30 +40,29 @@ module Zuul
     end
 
     def hash
-      response.to_hash
+      result.to_hash
     end
 
     def body
       @body ||= JSON.dump(hash)
     end
 
-    def self.for(router, result)
-      return new(router, result) if result.is_a?(Hash)
-      is_success = result.respond_to?(:success?) && !result.success?
-      return ErrorResponse.new(router, result) if is_success
-      HALResponse.new(router, result)
+    def self.for(router, outcome)
+      outcome.success { |result| return HALResponse.new(router, result) }
+      outcome.pre_condition_failed { |f| return PreConditionFailedResponse.new(router, f) }
+      outcome.failure { |validation| return ErrorResponse.new(router, validation) }
     end
 
     protected
     def router; @router; end
-    def response; @response; end
+    def result; @result; end
   end
 
   class HALResponse < JSONResponse
     def profile
       return @profile if defined?(@profile)
-      return @profile = nil if !response.respond_to?(:profile)
-      @profile = router.uri("/schema/#{response.profile}")
+      return @profile = nil if !result.respond_to?(:profile)
+      @profile = router.uri("/schema/#{result.profile}")
     end
 
     def content_type
@@ -72,34 +71,34 @@ module Zuul
 
     def links
       links = !profile.nil? ? { "profile" => { "href" => profile } } : {}
-      response.links.inject(links) do |links, kv|
+      return links if !result.respond_to?(:links)
+      result.links.inject(links) do |links, kv|
         links.merge(router.link(kv[0], kv[1]))
       end
     end
 
     def hash
-      response.to_hash.merge("_links" => links)
+      result.to_hash.merge("_links" => links)
     end
   end
 
   class ErrorResponse < JSONResponse
-    def status
-      response.errors.respond_to?(:status) ? response.errors.status : 500
-    end
+    def status; 400; end
+    def content_type; "application/vnd.gitorious.error+json"; end
+    def type; "validation_error"; end
+    def body; JSON.dump("type" => type, "message" => message); end
 
-    def content_type
-      "application/vnd.gitorious.error+json"
+    def message
+      return result if result.is_a?(Hash)
+      if result.respond_to?(:errors)
+        return result.errors.full_messages if result.errors.respond_to?(:full_messages)
+        result.errors
+      end
     end
+  end
 
-    def type
-      error = response.errors
-      return error.type if error.respond_to?(:type)
-      return "validation_error" if error.class.to_s == "Mutations::ErrorHash"
-      error.class.to_s
-    end
-
-    def body
-      JSON.dump("type" => type, "message" => response.errors.message)
-    end
+  class PreConditionFailedResponse < ErrorResponse
+    def type; result.symbol; end
+    def message; result.symbol; end
   end
 end

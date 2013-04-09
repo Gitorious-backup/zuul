@@ -20,23 +20,29 @@ require "zuul/serializer/project"
 module Zuul
   module Endpoint
     class Projects
-      def initialize(backend)
-        @backend = backend
+      def initialize(project_finder, use_case)
+        @use_case = use_case
+        @project_finder = project_finder
       end
 
       def link_for(object)
-        "/projects"
+        object.nil? ? "/projects" : "/projects/#{object.id}"
       end
 
       def options(request, response)
-        response.headers({ "Allow" => "POST, OPTIONS" })
+        response.headers({ "Allow" => "GET, POST, OPTIONS" })
         { "message" => "POST to create new project" }
       end
 
-      # TODO: Get logged in user
       def post(request, response)
-        outcome = @backend.run(request.params, { :user_id => 1 })
-        Zuul::Serializer::Project.new(outcome)
+        outcome = @use_case.new(Zuul::App, request.user).execute(request.params)
+        Zuul::Outcome.new(outcome, Zuul::Serializer::Project)
+      end
+
+      def get(request, response)
+        project = @project_finder.by_id(request.params["id"])
+        return UseCase::FailedOutcome.new({ :project => "No such project" }) if project.nil?
+        UseCase::SuccessfulOutcome.new(Zuul::Serializer::Project.new(project))
       end
     end
   end

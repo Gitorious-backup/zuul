@@ -20,6 +20,7 @@ require "sinatra/base"
 require "zuul/hash_router"
 require "zuul/json_response"
 require "zuul/request"
+require "use_case"
 
 module Zuul
   class App < Sinatra::Base
@@ -108,15 +109,24 @@ EOF
     def self.mount_endpoint(verb, route, endpoint, handler)
       self.send(verb.to_s.downcase.to_sym, route) do |*args|
         begin
-          result = endpoint.send(handler[:method], Zuul::Request.for(request, self.params), self)
-          response = Zuul::JSONResponse.for(self, result)
+          outcome = endpoint.send(handler[:method], Zuul::Request.for(request, self.params), self)
+          response = Zuul::JSONResponse.for(self, ensure_outcome(outcome))
           status(response.status)
           headers(response.headers)
           response.body
         rescue Zuul::InvalidRequest => err
           bad_request(err.message)
+        rescue AuthenticationRequired => err
+          auth_required(err.message)
         end
       end
+    end
+
+    def auth_required(message)
+      halt(401, { "WWW-Authenticate" => message }, JSON.dump({
+            "type" => "authentication_required",
+            "message" => "This action requires authentication"
+          }))
     end
 
     def bad_request(message)
@@ -135,6 +145,11 @@ EOF
         symbolized[key.to_sym] = hash[key]
         symbolized
       end
+    end
+
+    def ensure_outcome(outcome)
+      return outcome if outcome.respond_to?(:success?)
+      UseCase::SuccessfulOutcome.new(outcome)
     end
   end
 end

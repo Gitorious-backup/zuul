@@ -16,29 +16,29 @@
 #   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #++
 require "test_helper"
-require "zuul/endpoint/user_lookup"
+require "zuul/endpoint/project_lookup"
 require "ostruct"
 
-class TestUserFinder
-  def by_login(login)
-    OpenStruct.new(:login => login)
+class TestProjectFinder
+  def by_slug(slug)
+    OpenStruct.new(:slug => slug, :owner => OpenStruct.new(:id => 42))
   end
 end
 
-describe Zuul::Endpoint::UserLookup do
+describe Zuul::Endpoint::ProjectLookup do
   before do
     @res = Zuul::Test::Response.new
   end
 
   it "generates link" do
-    endpoint = Zuul::Endpoint::UserLookup.new(TestUserFinder.new)
+    endpoint = Zuul::Endpoint::ProjectLookup.new(TestProjectFinder.new)
 
-    link = { "href" => "/user/{login}", "templated" => true }
+    link = { "href" => "/project/{slug}", "templated" => true }
     assert_equal(link, endpoint.link_for(nil))
   end
 
   it "responds to OPTIONS request" do
-    endpoint = Zuul::Endpoint::UserLookup.new(TestUserFinder.new)
+    endpoint = Zuul::Endpoint::ProjectLookup.new(TestProjectFinder.new)
     response = endpoint.options(Zuul::Test::Request.new, @res)
 
     assert Hash === response
@@ -46,9 +46,9 @@ describe Zuul::Endpoint::UserLookup do
   end
 
   it "responds to GET request" do
-    endpoint = Zuul::Endpoint::UserLookup.new(TestUserFinder.new)
-    response = endpoint.get(Zuul::Test::Request.new(:login => "mm"), @res)
+    endpoint = Zuul::Endpoint::ProjectLookup.new(TestProjectFinder.new)
+    response = endpoint.get(Zuul::Test::Request.new(:slug => "mm"), @res)
 
-    assert_equal "mm", response.success.to_hash[:login]
+    assert_equal "mm", response.success.to_hash[:slug]
   end
 end

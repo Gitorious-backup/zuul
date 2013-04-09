@@ -15,44 +15,29 @@
 #   You should have received a copy of the GNU Affero General Public License
 #   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #++
-require "ostruct"
+require "zuul/serializer/repository"
 
-class User < Struct.new(:id, :login, :fullname, :email)
-  def public_email?
-    true
-  end
-end
+module Zuul
+  module Endpoint
+    class Repositories
+      def initialize(use_case)
+        @use_case = use_case
+      end
 
-class UserFinder
-  def by_login(login)
-    login == "christian" ? User.new(1, login, "Christian", "christian@gitorious.com") : nil
-  end
+      def link_for(object)
+        "/projects/#{object.id}/repositories"
+      end
 
-  def by_id(id)
-    User.new(1)
-  end
-end
+      def options(request, response)
+        response.headers({ "Allow" => "POST, OPTIONS" })
+        { "message" => "POST to create new repository" }
+      end
 
-class SuccessfulOutcome
-  attr_reader :result
-  def initialize(result)
-    @result = result
-  end
-  def success?; true; end
-end
-
-class FailedOutcome
-  attr_reader :errors
-  def initialize(errors)
-    @errors = errors
-  end
-  def success?; false; end
-end
-
-class SshKeyCreator
-  def self.run(params)
-    user = OpenStruct.new(:id => 1)
-    key = OpenStruct.new(:id => 12, :user => user, :key => params[:key])
-    SuccessfulOutcome.new(key)
+      def post(request, response)
+        project = request.params["project_id"].to_i
+        outcome = @use_case.new(Zuul::App, project, request.user).execute(request.params)
+        Zuul::Outcome.new(outcome, Zuul::Serializer::Repository)
+      end
+    end
   end
 end

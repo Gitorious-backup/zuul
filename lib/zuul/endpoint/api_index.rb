@@ -15,6 +15,8 @@
 #   You should have received a copy of the GNU Affero General Public License
 #   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #++
+require "use_case"
+
 module Zuul
   module Endpoint
     class APIIndex
@@ -28,7 +30,7 @@ module Zuul
       end
 
       def get(request, response)
-        @links
+        UseCase::SuccessfulOutcome.new(@links)
       end
 
       def link_for(object)

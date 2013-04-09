@@ -16,16 +16,26 @@
 #   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #++
 module Zuul
-  class MutationSerializer
-    def initialize(outcome); @outcome = outcome; end
-    def success?; @outcome.success?; end
-    def errors; @outcome.errors; end
-    def links; []; end
+  module Serializer
+    class Team
+      attr_reader :team, :profile, :links
 
-    def self.serializes(name, options = {})
-      self.send(:define_method, name) { @outcome.result }
-      return if options.key?(:profile) && options[:profile].nil?
-      self.send(:define_method, :profile) { options[:profile] || name }
+      def initialize(team)
+        @team = team
+        @profile = :team
+        @links = {
+          { "self" => "gts:team" } => team,
+          "curies" => nil,
+          "gts:memberships" => team
+        }
+      end
+
+      def id; team.id; end
+
+      def to_hash
+        { :id => team.id,
+          :name => team.name }
+      end
     end
   end
 end

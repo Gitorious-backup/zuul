@@ -27,26 +27,20 @@ describe Zuul::Serializer::Project do
                               :title => "Project", :description => "Desc",
                               :slug => "project", :created_at => @created,
                               :wiki_repository => nil)
-    @result = Zuul::Test::Success.new(@project)
-  end
-
-  it "is successful" do
-    serializer = Zuul::Serializer::Project.new(@result)
-    assert serializer.success?
   end
 
   it "proxies id" do
-    serializer = Zuul::Serializer::Project.new(@result)
+    serializer = Zuul::Serializer::Project.new(@project)
     assert_equal 42, serializer.id
   end
 
   it "generates url" do
-    serializer = Zuul::Serializer::Project.new(@result)
+    serializer = Zuul::Serializer::Project.new(@project)
     assert_equal "/projects/42", serializer.url
   end
 
   it "generates hash" do
-    serializer = Zuul::Serializer::Project.new(@result)
+    serializer = Zuul::Serializer::Project.new(@project)
     expected = {
       :id => 42,
       :description => "Desc",
@@ -63,7 +57,7 @@ describe Zuul::Serializer::Project do
       OpenStruct.new(:default_clone_url => "git://gts/project/wiki.git")
     end
 
-    serializer = Zuul::Serializer::Project.new(@result)
+    serializer = Zuul::Serializer::Project.new(@project)
 
     assert_equal "git://gts/project/wiki.git", serializer.to_hash["wiki_url"]
   end

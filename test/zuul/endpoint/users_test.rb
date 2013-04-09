@@ -49,6 +49,6 @@ describe Zuul::Endpoint::Users do
     endpoint = Zuul::Endpoint::Users.new(TestUserFinder.new)
     response = endpoint.get(Zuul::Test::Request.new(:id => 13), @res)
 
-    assert_equal 13, response.to_hash[:id]
+    assert_equal 13, response.result.to_hash[:id]
   end
 end

@@ -16,6 +16,7 @@
 #   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #++
 require "zuul/serializer/user"
+require "use_case"
 
 module Zuul
   module Endpoint
@@ -34,7 +35,9 @@ module Zuul
       end
 
       def get(request, response)
-        Zuul::Serializer::User.new(@user_finder.by_id(request.params[:id]))
+        user = @user_finder.by_id(request.params["id"])
+        return UseCase::FailedOutcome.new({ :user => "No such user" }) if user.nil?
+        UseCase::SuccessfulOutcome.new(Zuul::Serializer::User.new(user))
       end
     end
   end

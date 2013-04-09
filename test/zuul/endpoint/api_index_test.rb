@@ -36,6 +36,6 @@ describe Zuul::Endpoint::APIIndex do
     endpoint = Zuul::Endpoint::APIIndex.new([])
     response = endpoint.get(@req, @res)
 
-    assert_equal [], response.links
+    assert_equal [], response.result.links
   end
 end

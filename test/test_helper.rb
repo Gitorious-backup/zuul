@@ -23,6 +23,9 @@ require "stringio"
 Bundler.require(:default, :test)
 
 module Zuul
+  module App
+  end
+
   module Test
     class Success
       attr_reader :result
@@ -51,6 +54,8 @@ module Zuul
           h
         end
       end
+
+      def user; nil; end
     end
 
     class Response

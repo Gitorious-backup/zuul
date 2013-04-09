@@ -36,4 +36,17 @@ require "zuul/app"
 dir = File.dirname(__FILE__)
 require File.join(dir, "config/routes")
 
+require "zuul/request"
+
+module GitoriousAuthenticator
+  def self.authenticate(login, password)
+    credentials = Gitorious::Authentication::Credentials.new
+    credentials.username = login
+    credentials.password = password
+    Gitorious::Authentication.authenticate(credentials)
+  end
+end
+
+Zuul::Request.authenticator = GitoriousAuthenticator
+
 run Zuul::App.new(File.join(dir, "public"))

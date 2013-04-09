@@ -15,10 +15,32 @@
 #   You should have received a copy of the GNU Affero General Public License
 #   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #++
-require "zuul/error_message_hash"
+require "zuul/serializer/membership"
 
 module Zuul
-  class NotFoundError < Zuul::ErrorMessageHash
-    def status; 404; end
+  module Endpoint
+    class Memberships
+      def initialize(use_case)
+        @use_case = use_case
+      end
+
+      def link_for(object)
+        "/teams/#{object.id}/memberships"
+      end
+
+      def options(request, response)
+        response.headers({ "Allow" => "POST, OPTIONS" })
+        { "message" => "POST to create new membership" }
+      end
+
+      def post(request, response)
+        group = request.params["team_id"].to_i
+        outcome = @use_case.new(Zuul::App, group, request.user).execute({
+            :user_id => request.params["user_id"],
+            :role_name => request.params["role"]
+          })
+        Zuul::Outcome.new(outcome, Zuul::Serializer::Membership)
+      end
+    end
   end
 end

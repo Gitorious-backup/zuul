@@ -15,8 +15,6 @@
 #   You should have received a copy of the GNU Affero General Public License
 #   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #++
-require "zuul/not_found_error"
-
 module Zuul
   module Serializer
     class User
@@ -32,13 +30,7 @@ module Zuul
         }
       end
 
-      def success?; !user.nil?; end
       def id; user.id; end
-
-      def errors
-        return nil if success?
-        Zuul::NotFoundError.new({ :user => "Not found" })
-      end
 
       def to_hash
         hash = {

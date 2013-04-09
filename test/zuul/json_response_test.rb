@@ -17,6 +17,7 @@
 #++
 require "test_helper"
 require "zuul/json_response"
+require "use_case"
 require "ostruct"
 
 describe Zuul::JSONResponse do
@@ -46,8 +47,9 @@ describe Zuul::JSONResponse do
   end
 
   describe "#for" do
-    it "returns wrapper for hash" do
-      response = Zuul::JSONResponse.for(nil, { :name => "John" })
+    it "returns wrapper for hash yielding outcome" do
+      outcome = UseCase::SuccessfulOutcome.new({ :name => "John" })
+      response = Zuul::JSONResponse.for(nil, outcome)
       assert_equal "John", JSON.parse(response.body)["name"]
     end
   end
@@ -56,7 +58,7 @@ describe Zuul::JSONResponse do
     before { @res = Zuul::Test::Response.new }
 
     it "defaults to hal+json content type" do
-      result = OpenStruct.new({})
+      result = UseCase::SuccessfulOutcome.new({})
       response = Zuul::JSONResponse.for(@res, result)
 
       assert_equal "application/hal+json", response.content_type
@@ -64,7 +66,8 @@ describe Zuul::JSONResponse do
 
     it "includes profile with content type" do
       result = OpenStruct.new(:profile => "user")
-      response = Zuul::JSONResponse.for(@res, result)
+      outcome = UseCase::SuccessfulOutcome.new(result)
+      response = Zuul::JSONResponse.for(@res, outcome)
 
       ct = "application/hal+json; profile=http://localhost/schema/user"
       assert_equal ct, response.content_type
@@ -73,7 +76,8 @@ describe Zuul::JSONResponse do
     it "includes links in body" do
       result = OpenStruct.new(:to_hash => { :name => "Chris" },
                               :links => { "self" => nil, "find_user" => nil })
-      response = Zuul::JSONResponse.for(@res, result)
+      outcome = UseCase::SuccessfulOutcome.new(result)
+      response = Zuul::JSONResponse.for(@res, outcome)
 
       url = "http://localhost"
       links = { "self" => url, "find_user" => url }
@@ -83,12 +87,14 @@ describe Zuul::JSONResponse do
   end
 
   describe Zuul::ErrorResponse do
-    before { @error = Zuul::Test::Failure.new({ :email => "Missing" }) }
+    before do
+      @error = UseCase::FailedOutcome.new({ :email => "Missing" })
+    end
 
-    it "defaults to status 500" do
+    it "defaults to status 400" do
       response = Zuul::JSONResponse.for(nil, @error)
 
-      assert_equal 500, response.status
+      assert_equal 400, response.status
     end
 
     it "uses custom mime type for errors" do
@@ -100,7 +106,7 @@ describe Zuul::JSONResponse do
     it "encodes error body" do
       response = Zuul::JSONResponse.for(nil, @error)
 
-      expected = { "type" => "Zuul::ErrorMessageHash", "message" => { "email" => "Missing" } }
+      expected = { "type" => "validation_error", "message" => { "email" => "Missing" } }
       assert_equal expected, JSON.parse(response.body)
     end
   end

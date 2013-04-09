@@ -15,25 +15,26 @@
 #   You should have received a copy of the GNU Affero General Public License
 #   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #++
-require "zuul/mutation_serializer"
-
 module Zuul
   module Serializer
-    class SshKey < Zuul::MutationSerializer
-      serializes :ssh_key
-      def id; ssh_key.id; end
-      def url; "/users/#{ssh_key.user.id}/ssh_keys"; end
+    class SshKey
+      def initialize(ssh_key)
+        @ssh_key = ssh_key
+      end
+
+      def id; @ssh_key.id; end
+      def url; "/users/#{@ssh_key.user.id}/ssh_keys"; end
 
       def links
         { "self" => self,
           "curies" => nil,
-          { "parent" => "gts:user" } => ssh_key.user }
+          { "parent" => "gts:user" } => @ssh_key.user }
       end
 
       def to_hash
-        { :id => ssh_key.id,
-          :comment => ssh_key.comment,
-          :key => ssh_key.key }
+        { :id => @ssh_key.id,
+          :comment => @ssh_key.comment,
+          :key => @ssh_key.key }
       end
     end
   end

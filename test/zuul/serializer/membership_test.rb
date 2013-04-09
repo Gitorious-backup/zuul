@@ -16,39 +16,39 @@
 #   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #++
 require "test_helper"
-require "zuul/serializer/user"
+require "zuul/serializer/membership"
 require "ostruct"
 
-describe Zuul::Serializer::User do
+describe Zuul::Serializer::Membership do
   before do
-    @user = OpenStruct.new(:id => 1,
-                           :login => "mm",
-                           :fullname => "Mega Man",
-                           :email => "mm@capcom.com")
+    @membership = OpenStruct.new({
+        :id => 1,
+        :user => OpenStruct.new(:login => "christian"),
+        :group => OpenStruct.new(:id => 42, :name => "gitorians"),
+        :role => OpenStruct.new(:name => "Administrator")
+      })
   end
 
   it "proxies id" do
-    serializer = Zuul::Serializer::User.new(@user)
+    serializer = Zuul::Serializer::Membership.new(@membership)
     assert_equal 1, serializer.id
   end
 
-  it "serializes user as hash" do
-    def @user.public_email?; false; end
-    serializer = Zuul::Serializer::User.new(@user)
+  it "serializes membership as hash" do
+    serializer = Zuul::Serializer::Membership.new(@membership)
 
-    expected = { :id => 1, :login => "mm", :name => "Mega Man" }
+    expected = {
+      :id => 1,
+      :user => { :login => "christian" },
+      :group => { :name => "gitorians" },
+      :role => "administrator"
+    }
+
     assert_equal expected, serializer.to_hash
   end
 
-  it "serializes user with public email" do
-    def @user.public_email?; true; end
-    serializer = Zuul::Serializer::User.new(@user)
-
-    assert_equal({ :id => 1,
-                   :login => "mm",
-                   :name => "Mega Man",
-                   :email => "mm@capcom.com"
-
-            }, serializer.to_hash)
+  it "generates url" do
+    serializer = Zuul::Serializer::Membership.new(@membership)
+    assert_equal "/teams/42/memberships/1", serializer.url
   end
 end

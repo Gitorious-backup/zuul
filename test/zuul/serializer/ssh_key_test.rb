@@ -24,26 +24,20 @@ describe Zuul::Serializer::SshKey do
     user = OpenStruct.new(:id => 13)
     @key = OpenStruct.new(:id => 42, :user => user,
                           :key => "key", :comment => "Comment")
-    @result = Zuul::Test::Success.new(@key)
-  end
-
-  it "is successful" do
-    serializer = Zuul::Serializer::SshKey.new(@result)
-    assert serializer.success?
   end
 
   it "proxies id" do
-    serializer = Zuul::Serializer::SshKey.new(@result)
+    serializer = Zuul::Serializer::SshKey.new(@key)
     assert_equal 42, serializer.id
   end
 
   it "generates url" do
-    serializer = Zuul::Serializer::SshKey.new(@result)
+    serializer = Zuul::Serializer::SshKey.new(@key)
     assert_equal "/users/13/ssh_keys", serializer.url
   end
 
   it "generates hash" do
-    serializer = Zuul::Serializer::SshKey.new(@result)
+    serializer = Zuul::Serializer::SshKey.new(@key)
     expected = { :id => 42, :comment => "Comment", :key => "key" }
     assert_equal expected, serializer.to_hash
   end

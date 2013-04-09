@@ -15,29 +15,29 @@
 #   You should have received a copy of the GNU Affero General Public License
 #   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #++
-require "zuul/serializer/user"
+require "zuul/serializer/team"
 require "use_case"
 
 module Zuul
   module Endpoint
-    class UserLookup
-      def initialize(user_finder)
-        @user_finder = user_finder
+    class Teams
+      def initialize(team_finder)
+        @team_finder = team_finder
       end
 
-      def link_for(object)
-        { "href" => "/user/{login}", "templated" => true }
+      def link_for(team)
+        "/teams/#{team.id}"
       end
 
       def options(request, response)
         response.headers({ "Allow" => "GET, OPTIONS" })
-        { "message" => "To find a user, GET /user/{login}" }
+        { "message" => "GET /teams/{id} to view team" }
       end
 
       def get(request, response)
-        user = @user_finder.by_login(request.params["login"])
-        return UseCase::FailedOutcome.new({ :user => "User not found" }) if user.nil?
-        UseCase::SuccessfulOutcome.new(Zuul::Serializer::User.new(user))
+        team = @team_finder.by_id(request.params["id"])
+        return UseCase::FailedOutcome.new({ :team => "No such team" }) if team.nil?
+        UseCase::SuccessfulOutcome.new(Zuul::Serializer::Team.new(team))
       end
     end
   end
