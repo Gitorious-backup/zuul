@@ -43,10 +43,14 @@ module Zuul
     end
 
     def user
+      raise AuthenticationRequired.new("Authentication is required") if current_user.nil?
+      current_user
+    end
+
+    def current_user
       return @user if @user
       login, password = credentials
       @user = Request.authenticate(login, password) if !login.nil? && !password.nil?
-      raise AuthenticationRequired.new("Authentication is required") if @user.nil?
       @user
     end
 
