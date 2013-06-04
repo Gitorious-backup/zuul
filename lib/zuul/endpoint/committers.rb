@@ -15,36 +15,29 @@
 #   You should have received a copy of the GNU Affero General Public License
 #   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #++
-require "zuul/serializer/repositories"
-require "zuul/serializer/repository"
+require "zuul/serializer/committers"
+require "use_case"
 
 module Zuul
   module Endpoint
-    class Repositories
-      def initialize(get_use_case, post_use_case)
-        @get_use_case = get_use_case
-        @post_use_case = post_use_case
+    class Committers
+      def initialize(use_case)
+        @use_case = use_case
       end
 
       def link_for(object)
-        "/projects/#{object.id}/repositories"
+        "/repositories/#{object.id}/committers"
       end
 
       def options(request, response)
-        response.headers({ "Allow" => "GET, POST, OPTIONS" })
-        { "message" => "POST to create new repository. GET to list all repositories" }
+        response.headers({ "Allow" => "GET, OPTIONS" })
+        { "message" => "GET to look up the individual committers of a repository" }
       end
 
       def get(request, response)
-        project = request.params["project_id"].to_i
-        outcome = @get_use_case.new(Zuul::App, project, request.current_user).execute
-        Zuul::Outcome.new(outcome, Zuul::Serializer::Repositories)
-      end
-
-      def post(request, response)
-        project = request.params["project_id"].to_i
-        outcome = @post_use_case.new(Zuul::App, project, request.user).execute(request.params)
-        Zuul::Outcome.new(outcome, Zuul::Serializer::Repository)
+        repository = request.params["repository_id"].to_i
+        outcome = @use_case.new(Zuul::App, repository, request.current_user).execute
+        Zuul::Outcome.new(outcome, Zuul::Serializer::Committers)
       end
     end
   end

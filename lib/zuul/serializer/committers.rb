@@ -15,34 +15,24 @@
 #   You should have received a copy of the GNU Affero General Public License
 #   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #++
+require "zuul/serializer/user"
+
 module Zuul
   module Serializer
-    class Repository
-      def initialize(repository)
-        @repository = repository
+    class Committers
+      def initialize(committers)
+        @committers = committers
       end
-
-      def id; @repository.id; end
-      def url; "/projects/#{@repository.project.id}/repositories/#{id}"; end
 
       def links
         { "self" => self,
-          "curies" => nil,
-          "gts:committers" => @repository,
-          { "parent" => "gts:user" } => @repository.owner }
+          "curies" => nil }
       end
 
       def to_hash
-        {
-          :id => @repository.id,
-          :name => @repository.name,
-          :description => @repository.description,
-          :created_at => @repository.created_at,
-          :owner => {
-            :id => @repository.owner.id,
-            :type => @repository.owner.class.to_s
-          }
-        }
+        { "_embedded" => {
+            "gts:committer" => @committers.map { |c| User.new(c) }
+          } }
       end
     end
   end

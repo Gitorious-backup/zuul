@@ -73,7 +73,6 @@ Zuul::App.mount("gts:ssh_keys", Zuul::Endpoint::SshKeys.new(CreateSshKey)) do |r
 end
 
 # Projects
-
 require "zuul/endpoint/project_lookup"
 
 finder = ProjectFinder.new
@@ -94,7 +93,17 @@ end
 # Repositories
 require "zuul/endpoint/repositories"
 
-Zuul::App.mount("gts:repositories", Zuul::Endpoint::Repositories.new(CreateProjectRepository)) do |route|
+repo_endpoint = Zuul::Endpoint::Repositories.new(ListMainlines, CreateProjectRepository)
+Zuul::App.mount("gts:repositories", repo_endpoint) do |route|
   route.options("/projects/:project_id/repositories", :options)
+  route.get("/projects/:project_id/repositories", :method => :get)
   route.post("/projects/:project_id/repositories", :method => :post, :schema => "repository")
+end
+
+# Committers
+require "zuul/endpoint/committers"
+
+Zuul::App.mount("gts:committers", Zuul::Endpoint::Committers.new(ListCommitters)) do |route|
+  route.options("/repositories/:repository_id/committers", :options)
+  route.get("/repositories/:repository_id/committers", :method => :get, :schema => "committers")
 end

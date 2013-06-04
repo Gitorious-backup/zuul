@@ -84,6 +84,26 @@ describe Zuul::JSONResponse do
       expected = { "name" => "Chris", "_links" => links }
       assert_equal expected, JSON.parse(response.body)
     end
+
+    it "embeds collections" do
+      outcome = UseCase::SuccessfulOutcome.new({
+          "_embedded" => {
+            "gts:something" => [OpenStruct.new(:to_hash => { :name => "Chris" },
+                :links => { "self" => nil, "find_user" => nil })]
+          }
+        })
+      response = Zuul::JSONResponse.for(@res, outcome)
+
+      url = "http://localhost"
+      links = { "self" => url, "find_user" => url }
+      expected = {
+        "_embedded" => {
+          "gts:something" => [{ "name" => "Chris", "_links" => links }]
+        },
+        "_links" => {}
+      }
+      assert_equal expected, JSON.parse(response.body)
+    end
   end
 
   describe Zuul::ErrorResponse do

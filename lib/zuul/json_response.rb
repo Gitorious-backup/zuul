@@ -34,7 +34,7 @@ module Zuul
     end
 
     def headers
-      { "Content-Length" => body.length.to_s,
+      { "Content-Length" => body.bytes.count.to_s,
         "Content-Type" => content_type,
         "Etag" => Digest::MD5.hexdigest(body) }
     end
@@ -59,26 +59,42 @@ module Zuul
   end
 
   class HALResponse < JSONResponse
-    def profile
-      return @profile if defined?(@profile)
-      return @profile = nil if !result.respond_to?(:profile)
-      @profile = router.uri("/schema/#{result.profile}")
-    end
-
     def content_type
+      profile = profile_url(result)
       "application/hal+json" + (!profile.nil? ? "; profile=#{profile}" : "")
     end
 
-    def links
+    def hash
+      hash_for(result)
+    end
+
+    private
+    def hash_for(resource)
+      hash = resource.to_hash.merge("_links" => links_for(resource))
+
+      if hash.key?("_embedded")
+        hash["_embedded"].each do |rel, resources|
+          hash["_embedded"][rel] = resources.map { |res| hash_for(res) }
+        end
+      end
+
+      hash
+    end
+
+    def links_for(resource)
+      profile = profile_url(resource)
       links = !profile.nil? ? { "profile" => { "href" => profile } } : {}
-      return links if !result.respond_to?(:links)
-      result.links.inject(links) do |links, kv|
+      return links if !resource.respond_to?(:links)
+      resource.links.inject(links) do |links, kv|
         links.merge(router.link(kv[0], kv[1]))
       end
     end
 
-    def hash
-      result.to_hash.merge("_links" => links)
+    def profile_url(resource)
+      @profiles ||= {}
+      return @profiles[resource] if @profiles[resource]
+      return @profiles[resource] = nil if !resource.respond_to?(:profile)
+      @profiles[resource] = router.uri("/schema/#{resource.profile}")
     end
   end
 
