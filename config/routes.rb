@@ -12,7 +12,8 @@ index = Zuul::Endpoint::APIIndex.new({
     "gts:find_user" => nil,
     "gts:find_team" => nil,
     "gts:projects" => nil,
-    "gts:find_project" => nil
+    "gts:find_project" => nil,
+    "gts:find_repository" => nil
 })
 
 Zuul::App.mount("start", index) do |route|
@@ -98,6 +99,15 @@ Zuul::App.mount("gts:repositories", repo_endpoint) do |route|
   route.options("/projects/:project_id/repositories", :options)
   route.get("/projects/:project_id/repositories", :method => :get)
   route.post("/projects/:project_id/repositories", :method => :post, :schema => "repository")
+end
+
+require "zuul/endpoint/repository_lookup"
+
+finder = RepositoryFinder.new
+Zuul::App.mount("gts:find_repository", Zuul::Endpoint::RepositoryLookup.new(finder)) do |route|
+  route.options("/repository", :options)
+  route.options("/repository/:project/:repository", :options)
+  route.get("/repository/:project/:repository", :get)
 end
 
 # Committers
