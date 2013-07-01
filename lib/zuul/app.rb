@@ -52,7 +52,8 @@ EOF
     end
 
     not_found do
-      send_file(File.expand_path("404.html", @public_folder))
+      status 404
+      File.read(File.expand_path("404.html", @public_folder))
     end
 
     ### Actions
