@@ -16,6 +16,7 @@
 #   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #++
 require "zuul/serializer/user"
+require "zuul/error"
 require "use_case"
 
 module Zuul
@@ -36,7 +37,12 @@ module Zuul
 
       def get(request, response)
         user = @user_finder.by_login(request.params["login"])
-        return UseCase::FailedOutcome.new({ :user => "User not found" }) if user.nil?
+
+        if user.nil?
+          error = Zuul::NotFoundError.new({ :user => "User not found" })
+          return UseCase::FailedOutcome.new(error)
+        end
+
         UseCase::SuccessfulOutcome.new(Zuul::Serializer::User.new(user))
       end
     end
