@@ -99,13 +99,23 @@ module Zuul
   end
 
   class ErrorResponse < JSONResponse
-    def status; 400; end
+    def status
+      return result.status if result.respond_to?(:status)
+      return result[:status] if result.respond_to?(:key?) && result.key?(:status)
+      400
+    end
+
+    def type
+      return result.type if result.respond_to?(:type)
+      "validation_error"
+    end
+
     def content_type; "application/vnd.gitorious.error+json"; end
-    def type; "validation_error"; end
     def body; JSON.dump("type" => type, "message" => message); end
 
     def message
       return result if result.is_a?(Hash)
+      return result.message if result.respond_to?(:message)
       if result.respond_to?(:errors)
         return result.errors.full_messages if result.errors.respond_to?(:full_messages)
         result.errors

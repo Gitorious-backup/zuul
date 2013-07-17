@@ -16,7 +16,9 @@
 #   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #++
 require "zuul/serializer/repository"
+require "zuul/error"
 require "use_case"
+require "uri"
 
 module Zuul
   module Endpoint
@@ -35,9 +37,20 @@ module Zuul
       end
 
       def get(request, response)
-        repository = @repository_finder.by_slug("#{request.params["project"]}/#{request.params["repository"]}")
-        return UseCase::FailedOutcome.new({ :repository => "Repository not found" }) if repository.nil?
+        repository = @repository_finder.by_slug(slug(request.params))
+
+        if repository.nil?
+          error = Zuul::Error.new(404, :repository => "Repository not found")
+          return UseCase::FailedOutcome.new(error)
+        end
+
         UseCase::SuccessfulOutcome.new(Zuul::Serializer::Repository.new(repository))
+      end
+
+      private
+      def slug(params)
+        (params["slug"] && URI.decode(params["slug"])) ||
+          "#{params["project"]}/#{params["repository"]}"
       end
     end
   end

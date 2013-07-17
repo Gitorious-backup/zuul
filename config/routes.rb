@@ -107,7 +107,9 @@ finder = RepositoryFinder.new
 Zuul::App.mount("gts:find_repository", Zuul::Endpoint::RepositoryLookup.new(finder)) do |route|
   route.options("/repository", :options)
   route.options("/repository/:project/:repository", :options)
+  route.options("/repository/:slug", :options)
   route.get("/repository/:project/:repository", :get)
+  route.get("/repository/:slug", :get)
 end
 
 # Committers

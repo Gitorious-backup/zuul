@@ -47,7 +47,14 @@ describe Zuul::Endpoint::RepositoryLookup do
 
   it "responds to GET request" do
     endpoint = Zuul::Endpoint::RepositoryLookup.new(TestRepositoryFinder.new)
-    response = endpoint.get(Zuul::Test::Request.new(:slug => "some/stuff"), @res)
+    response = endpoint.get(Zuul::Test::Request.new(:project => "some", :repository => "stuff"), @res)
+
+    assert_equal "stuff", response.success.to_hash[:name]
+  end
+
+  it "responds to GET request with escaped slash" do
+    endpoint = Zuul::Endpoint::RepositoryLookup.new(TestRepositoryFinder.new)
+    response = endpoint.get(Zuul::Test::Request.new(:slug => "some%2Fstuff"), @res)
 
     assert_equal "stuff", response.success.to_hash[:name]
   end

@@ -118,7 +118,7 @@ EOF
           response = Zuul::JSONResponse.for(self, ensure_outcome(outcome))
           status(response.status)
           headers(response.headers)
-          response.body
+          body(response.body)
         rescue Zuul::InvalidRequest => err
           bad_request(err.message)
         rescue AuthenticationRequired => err
