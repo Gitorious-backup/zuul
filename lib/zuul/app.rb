@@ -51,10 +51,10 @@ EOF
       end
     end
 
-    not_found do
-      status 404
-      File.read(File.expand_path("404.html", @public_folder))
-    end
+    # not_found do
+    #   status 404
+    #   File.read(File.expand_path("404.html", @public_folder))
+    # end
 
     ### Actions
 

@@ -49,4 +49,5 @@ end
 
 Zuul::Request.authenticator = GitoriousAuthenticator
 
+Zuul::App.set(:environment, :production)
 run Zuul::App.new(File.join(dir, "public"))
