@@ -40,7 +40,7 @@ module Zuul
         repository = @repository_finder.by_slug(slug(request.params))
 
         if repository.nil?
-          error = Zuul::Error.new(404, :repository => "Repository not found")
+          error = Zuul::NotFoundError.new(:repository => "Repository not found")
           return UseCase::FailedOutcome.new(error)
         end
 

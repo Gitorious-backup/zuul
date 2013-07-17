@@ -25,6 +25,10 @@ class TestProjectFinder
   end
 end
 
+class EmptyProjectFinder
+  def by_slug(slug); nil; end
+end
+
 describe Zuul::Endpoint::ProjectLookup do
   before do
     @res = Zuul::Test::Response.new
@@ -50,5 +54,13 @@ describe Zuul::Endpoint::ProjectLookup do
     response = endpoint.get(Zuul::Test::Request.new(:slug => "mm"), @res)
 
     assert_equal "mm", response.success.to_hash[:slug]
+  end
+
+  it "responds with 404 when not found" do
+    endpoint = Zuul::Endpoint::ProjectLookup.new(EmptyProjectFinder.new)
+    response = endpoint.get(Zuul::Test::Request.new(:slug => "mm"), @res)
+
+    assert_equal 404, response.failure.status
+    assert_equal "not_found_error", response.failure.type
   end
 end

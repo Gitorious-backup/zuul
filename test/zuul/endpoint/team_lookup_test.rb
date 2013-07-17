@@ -25,6 +25,10 @@ class TestTeamFinder
   end
 end
 
+class EmptyTestTeamFinder
+  def by_name(name); nil; end
+end
+
 describe Zuul::Endpoint::TeamLookup do
   before do
     @res = Zuul::Test::Response.new
@@ -50,5 +54,13 @@ describe Zuul::Endpoint::TeamLookup do
     response = endpoint.get(Zuul::Test::Request.new(:name => "mm"), @res)
 
     assert_equal "mm", response.success.to_hash[:name]
+  end
+
+  it "responds with 404 when not found" do
+    endpoint = Zuul::Endpoint::TeamLookup.new(EmptyTestTeamFinder.new)
+    response = endpoint.get(Zuul::Test::Request.new(:name => "mm"), @res)
+
+    assert_equal 404, response.failure.status
+    assert_equal "not_found_error", response.failure.type
   end
 end

@@ -16,6 +16,7 @@
 #   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #++
 require "zuul/serializer/team"
+require "zuul/error"
 require "use_case"
 
 module Zuul
@@ -36,7 +37,12 @@ module Zuul
 
       def get(request, response)
         team = @team_finder.by_name(request.params["name"])
-        return UseCase::FailedOutcome.new({ :team => "Team not found" }) if team.nil?
+
+        if team.nil?
+          error = Zuul::NotFoundError.new(:team => "Team not found")
+          return UseCase::FailedOutcome.new(error)
+        end
+
         UseCase::SuccessfulOutcome.new(Zuul::Serializer::Team.new(team))
       end
     end

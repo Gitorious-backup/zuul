@@ -25,6 +25,10 @@ class TestRepositoryFinder
   end
 end
 
+class EmptyRepositoryFinder
+  def by_slug(slug); nil; end
+end
+
 describe Zuul::Endpoint::RepositoryLookup do
   before do
     @res = Zuul::Test::Response.new
@@ -57,5 +61,13 @@ describe Zuul::Endpoint::RepositoryLookup do
     response = endpoint.get(Zuul::Test::Request.new(:slug => "some%2Fstuff"), @res)
 
     assert_equal "stuff", response.success.to_hash[:name]
+  end
+
+  it "responds with 404 when not found" do
+    endpoint = Zuul::Endpoint::RepositoryLookup.new(EmptyRepositoryFinder.new)
+    response = endpoint.get(Zuul::Test::Request.new(:slug => "some%2Fstuff"), @res)
+
+    assert_equal 404, response.failure.status
+    assert_equal "not_found_error", response.failure.type
   end
 end

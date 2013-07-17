@@ -16,6 +16,7 @@
 #   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #++
 require "zuul/serializer/project"
+require "zuul/error"
 require "use_case"
 
 module Zuul
@@ -36,7 +37,12 @@ module Zuul
 
       def get(request, response)
         project = @project_finder.by_slug(request.params["slug"])
-        return UseCase::FailedOutcome.new({ :project => "Project not found" }) if project.nil?
+
+        if project.nil?
+          error = Zuul::NotFoundError.new({ :project => "Project not found" })
+          return UseCase::FailedOutcome.new(error)
+        end
+
         UseCase::SuccessfulOutcome.new(Zuul::Serializer::Project.new(project))
       end
     end

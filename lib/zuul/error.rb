@@ -25,7 +25,22 @@ module Zuul
     end
 
     def type
-      self.class.name.underscore
+      underscore(self.class.name).sub(/^zuul\//, "")
+    end
+
+    private
+    def underscore(str)
+      str.gsub(/::/, '/').
+        gsub(/([A-Z]+)([A-Z][a-z])/,'\1_\2').
+        gsub(/([a-z\d])([A-Z])/,'\1_\2').
+        tr("-", "_").
+        downcase
+    end
+  end
+
+  class NotFoundError < Error
+    def initialize(message)
+      super(404, message)
     end
   end
 end
