@@ -16,26 +16,35 @@
 #   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #++
 require "zuul/serializer/membership"
+require "zuul/serializer/memberships"
+require "use_case"
 
 module Zuul
   module Endpoint
     class Memberships
-      def initialize(use_case)
-        @use_case = use_case
+      def initialize(create_membership, group_finder)
+        @create_membership = create_membership
+        @group_finder = group_finder
       end
 
-      def link_for(object)
-        "/teams/#{object.id}/memberships"
+      def link_for(group)
+        "/teams/#{group.id}/memberships"
       end
 
       def options(request, response)
-        response.headers({ "Allow" => "POST, OPTIONS" })
-        { "message" => "POST to create new membership" }
+        response.headers({ "Allow" => "GET, POST, OPTIONS" })
+        { "message" => "POST to create new membership, GET to list memberships" }
+      end
+
+      def get(request, response)
+        group = @group_finder.find(request.params["team_id"].to_i)
+        memberships = UseCase::SuccessfulOutcome.new(group.memberships)
+        Zuul::Outcome.new(memberships, Zuul::Serializer::Memberships)
       end
 
       def post(request, response)
         group = request.params["team_id"].to_i
-        outcome = @use_case.new(Zuul::App, group, request.user).execute({
+        outcome = @create_membership.new(Zuul::App, group, request.user).execute({
             :user_id => request.params["user_id"],
             :role_name => request.params["role"]
           })

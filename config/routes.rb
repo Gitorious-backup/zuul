@@ -60,9 +60,10 @@ end
 # Memberships
 require "zuul/endpoint/memberships"
 
-Zuul::App.mount("gts:memberships", Zuul::Endpoint::Memberships.new(CreateMembership)) do |route|
+Zuul::App.mount("gts:memberships", Zuul::Endpoint::Memberships.new(CreateMembership, Team)) do |route|
   route.options("/teams/:team_id/memberships", :options)
   route.post("/teams/:team_id/memberships", :method => :post, :schema => "membership_payload")
+  route.get("/teams/:team_id/memberships", :get)
 end
 
 # SSH Keys
