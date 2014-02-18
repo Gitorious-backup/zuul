@@ -58,7 +58,7 @@ EOF
 
     ### Actions
 
-    get /\/browser\/?/ do
+    get /^\/browser\/?/ do
       redirect "/browser/index.html"
     end
 
